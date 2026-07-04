@@ -100,14 +100,18 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS update_users_updated_at ON users;
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_venues_updated_at ON venues;
 CREATE TRIGGER update_venues_updated_at BEFORE UPDATE ON venues
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_qr_codes_updated_at ON qr_codes;
 CREATE TRIGGER update_qr_codes_updated_at BEFORE UPDATE ON qr_codes
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_reviews_updated_at ON reviews;
 CREATE TRIGGER update_reviews_updated_at BEFORE UPDATE ON reviews
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
