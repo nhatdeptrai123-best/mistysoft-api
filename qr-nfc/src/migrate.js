@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function migrate() {
+export async function migrate() {
   try {
     const schemaPath = path.join(__dirname, '../database/schema.sql');
     const schema = fs.readFileSync(schemaPath, 'utf8');
@@ -18,5 +18,3 @@ async function migrate() {
     process.exit(1);
   }
 }
-
-migrate();
