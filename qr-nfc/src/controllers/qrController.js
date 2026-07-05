@@ -218,13 +218,3 @@ export async function deleteQRCode(request, reply) {
     return reply.code(500).send({ error: 'Failed to delete QR code' });
   }
 }
-    
-    await pool.query('DELETE FROM qr_codes WHERE id = $1', [id]);
-    
-    return reply.send({ message: 'QR code deleted successfully' });
-    
-  } catch (error) {
-    console.error('Delete QR code error:', error);
-    return reply.code(500).send({ error: 'Failed to delete QR code' });
-  }
-}
