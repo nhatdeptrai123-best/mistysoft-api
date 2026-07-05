@@ -1,11 +1,12 @@
 // JWT Authentication middleware
 
+import pool from '../config/database.js';
+
 export async function authenticate(request, reply) {
   try {
     await request.jwtVerify();
   } catch (err) {
-    reply.send({ error: 'Unauthorized' });
-    return reply.code(401);
+    return reply.code(401).send({ error: 'Unauthorized' });
   }
 }
 
@@ -15,4 +16,23 @@ export async function optionalAuth(request, reply) {
   } catch (err) {
     // Continue without auth
   }
+}
+
+export function requireRole(role) {
+  return async (request, reply) => {
+    try {
+      await request.jwtVerify();
+      
+      const result = await pool.query(
+        'SELECT role FROM users WHERE id = $1',
+        [request.user.userId]
+      );
+      
+      if (result.rows.length === 0 || result.rows[0].role !== role) {
+        return reply.code(403).send({ error: 'Forbidden: insufficient permissions' });
+      }
+    } catch (err) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+  };
 }

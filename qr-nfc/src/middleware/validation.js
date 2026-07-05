@@ -58,6 +58,7 @@ export const createQRSchema = {
       venue_id: { type: 'string', format: 'uuid', maxLength: 36 },
       name: { type: 'string', minLength: 2, maxLength: 255 },
       description: { type: 'string', maxLength: 1000 },
+      mode: { type: 'string', enum: ['simple', 'dashboard'] },
       redirect_url: { type: 'string', maxLength: 2048 }
     },
     required: ['venue_id', 'name']
@@ -70,9 +71,38 @@ export const updateQRSchema = {
     properties: {
       name: { type: 'string', minLength: 2, maxLength: 255 },
       description: { type: 'string', maxLength: 1000 },
+      mode: { type: 'string', enum: ['simple', 'dashboard'] },
       redirect_url: { type: 'string', maxLength: 2048 },
       is_active: { type: 'boolean' }
     }
+  }
+};
+
+export const createReviewSchema = {
+  body: {
+    type: 'object',
+    properties: {
+      code: { type: 'string', minLength: 2, maxLength: 50 },
+      rating: { type: 'integer', minimum: 1, maximum: 5 },
+      comment: { type: 'string', maxLength: 2000 },
+      customer_name: { type: 'string', maxLength: 255 },
+      customer_email: { type: 'string', format: 'email', maxLength: 255 }
+    },
+    required: ['code', 'rating']
+  }
+};
+
+export const createOwnerSchema = {
+  body: {
+    type: 'object',
+    properties: {
+      email: { type: 'string', format: 'email' },
+      password: { type: 'string', minLength: 6 },
+      name: { type: 'string', minLength: 2 },
+      phone: { type: 'string' },
+      venue_id: { type: 'string', format: 'uuid' }
+    },
+    required: ['email', 'password', 'name', 'venue_id']
   }
 };
 

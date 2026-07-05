@@ -6,7 +6,7 @@ export async function resolveQRCode(request, reply) {
     const { code } = request.params;
     
     const result = await pool.query(
-      `SELECT qc.id, qc.redirect_url, qc.is_active, v.name as venue_name
+      `SELECT qc.id, qc.redirect_url, qc.is_active, qc.mode, v.name as venue_name
        FROM qr_codes qc
        JOIN venues v ON qc.venue_id = v.id
        WHERE qc.code = $1`,
@@ -32,6 +32,7 @@ export async function resolveQRCode(request, reply) {
     return reply.send({
       redirect_url: qrCode.redirect_url,
       venue_name: qrCode.venue_name,
+      mode: qrCode.mode || 'simple',
       configured: !!qrCode.redirect_url
     });
     

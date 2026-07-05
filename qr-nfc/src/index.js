@@ -5,7 +5,7 @@ import env from '@fastify/env';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { errorHandler } from './middleware/errorHandler.js';
-import { authenticate } from './middleware/auth.js';
+import { authenticate, requireRole } from './middleware/auth.js';
 import { rateLimit, authRateLimiter } from './middleware/rateLimiter.js';
 import {
   registerSchema,
@@ -14,13 +14,17 @@ import {
   updateVenueSchema,
   createQRSchema,
   updateQRSchema,
-  logScanSchema
+  logScanSchema,
+  createReviewSchema,
+  createOwnerSchema
 } from './middleware/validation.js';
 import * as authController from './controllers/authController.js';
 import * as venuesController from './controllers/venuesController.js';
 import * as qrController from './controllers/qrController.js';
 import * as resolveController from './controllers/resolveController.js';
 import * as analyticsController from './controllers/analyticsController.js';
+import * as ownersController from './controllers/ownersController.js';
+import * as reviewsController from './controllers/reviewsController.js';
 import { migrate } from './migrate.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -118,6 +122,22 @@ fastify.register(async function (fastify) {
     fastify.get('/scans', { onRequest: [authenticate] }, analyticsController.getScanAnalytics);
     fastify.get('/reviews', { onRequest: [authenticate] }, analyticsController.getReviewAnalytics);
   }, { prefix: '/api/qr-nfc/analytics' });
+
+  // Owner routes
+  fastify.register(async function (fastify) {
+    fastify.post('/owners', { onRequest: [authenticate], schema: createOwnerSchema }, ownersController.createOwner);
+    fastify.get('/owners', { onRequest: [authenticate] }, ownersController.listOwners);
+    fastify.get('/owners/me', { onRequest: [authenticate] }, ownersController.getOwnerProfile);
+  }, { prefix: '/api/qr-nfc' });
+
+  // Review routes
+  fastify.register(async function (fastify) {
+    fastify.post('/reviews/submit', { schema: createReviewSchema }, reviewsController.submitReview);
+    fastify.get('/reviews', { onRequest: [authenticate] }, reviewsController.listReviews);
+    fastify.get('/reviews/stats', { onRequest: [authenticate] }, reviewsController.getReviewStats);
+    fastify.put('/reviews/:id', { onRequest: [authenticate] }, reviewsController.updateReview);
+    fastify.get('/owners/reviews', { onRequest: [authenticate] }, reviewsController.listOwnerReviews);
+  }, { prefix: '/api/qr-nfc' });
 });
 
 // Start server

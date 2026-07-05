@@ -1,18 +1,35 @@
 import pool from '../config/database.js';
 
+async function getCurrentUserRole(request) {
+  const result = await pool.query(
+    'SELECT role FROM users WHERE id = $1',
+    [request.user.userId]
+  );
+  return result.rows[0]?.role || 'admin';
+}
+
 // List venues for current user
 export async function listVenues(request, reply) {
   try {
     await request.jwtVerify();
+    const role = await getCurrentUserRole(request);
     
-    const result = await pool.query(
-      `SELECT id, name, address, city, country, logo_url, created_at, updated_at
-       FROM venues
-       WHERE user_id = $1
-       ORDER BY created_at DESC`,
-      [request.user.userId]
-    );
+    let query, params;
+    if (role === 'owner') {
+      query = `SELECT id, name, address, city, country, logo_url, created_at, updated_at
+               FROM venues
+               WHERE owner_id = $1
+               ORDER BY created_at DESC`;
+      params = [request.user.userId];
+    } else {
+      query = `SELECT id, name, address, city, country, logo_url, created_at, updated_at
+               FROM venues
+               WHERE user_id = $1
+               ORDER BY created_at DESC`;
+      params = [request.user.userId];
+    }
     
+    const result = await pool.query(query, params);
     return reply.send({ 
       venues: result.rows,
       total: result.rows.length 
@@ -28,7 +45,23 @@ export async function listVenues(request, reply) {
 export async function getVenue(request, reply) {
   try {
     await request.jwtVerify();
+    const role = await getCurrentUserRole(request);
     const { id } = request.params;
+    
+    if (role === 'owner') {
+      const result = await pool.query(
+        `SELECT id, name, address, city, country, logo_url, created_at, updated_at
+         FROM venues
+         WHERE id = $1 AND owner_id = $2`,
+        [id, request.user.userId]
+      );
+      
+      if (result.rows.length === 0) {
+        return reply.code(404).send({ error: 'Venue not found' });
+      }
+      
+      return reply.send({ venue: result.rows[0] });
+    }
     
     const result = await pool.query(
       `SELECT id, name, address, city, country, logo_url, created_at, updated_at
@@ -53,8 +86,13 @@ export async function getVenue(request, reply) {
 export async function createVenue(request, reply) {
   try {
     await request.jwtVerify();
-    const { name, address, city, country, logo_url } = request.body;
+    const role = await getCurrentUserRole(request);
     
+    if (role !== 'admin') {
+      return reply.code(403).send({ error: 'Only admins can create venues' });
+    }
+    
+    const { name, address, city, country, logo_url } = request.body;
     const result = await pool.query(
       `INSERT INTO venues (user_id, name, address, city, country, logo_url)
        VALUES ($1, $2, $3, $4, $5, $6)
@@ -77,14 +115,22 @@ export async function createVenue(request, reply) {
 export async function updateVenue(request, reply) {
   try {
     await request.jwtVerify();
+    const role = await getCurrentUserRole(request);
     const { id } = request.params;
     const { name, address, city, country, logo_url } = request.body;
     
-    // Verify ownership
-    const checkResult = await pool.query(
-      'SELECT id FROM venues WHERE id = $1 AND user_id = $2',
-      [id, request.user.userId]
-    );
+    let checkQuery, checkParams;
+    if (role === 'admin') {
+      checkQuery = 'SELECT id FROM venues WHERE id = $1 AND user_id = $2';
+      checkParams = [id, request.user.userId];
+    } else if (role === 'owner') {
+      checkQuery = 'SELECT id FROM venues WHERE id = $1 AND owner_id = $2';
+      checkParams = [id, request.user.userId];
+    } else {
+      return reply.code(403).send({ error: 'Forbidden' });
+    }
+    
+    const checkResult = await pool.query(checkQuery, checkParams);
     
     if (checkResult.rows.length === 0) {
       return reply.code(404).send({ error: 'Venue not found or access denied' });
@@ -117,7 +163,12 @@ export async function updateVenue(request, reply) {
 export async function deleteVenue(request, reply) {
   try {
     await request.jwtVerify();
+    const role = await getCurrentUserRole(request);
     const { id } = request.params;
+    
+    if (role !== 'admin') {
+      return reply.code(403).send({ error: 'Only admins can delete venues' });
+    }
     
     const checkResult = await pool.query(
       'SELECT id FROM venues WHERE id = $1 AND user_id = $2',

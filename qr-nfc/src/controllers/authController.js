@@ -20,9 +20,10 @@ export async function register(request, reply) {
     const passwordHash = await hashPassword(password);
     
     // Insert user
+    const role = request.body.role || 'admin';
     const result = await pool.query(
-      'INSERT INTO users (email, password_hash, name, phone) VALUES ($1, $2, $3, $4) RETURNING id, email, name, created_at',
-      [email, passwordHash, name, phone || null]
+      'INSERT INTO users (email, password_hash, name, phone, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, name, role, created_at',
+      [email, passwordHash, name, phone || null, role]
     );
     
     const user = result.rows[0];
@@ -39,6 +40,7 @@ export async function register(request, reply) {
         id: user.id,
         email: user.email,
         name: user.name,
+        role: user.role,
         createdAt: user.created_at
       },
       token
@@ -57,7 +59,7 @@ export async function login(request, reply) {
   try {
     // Find user
     const result = await pool.query(
-      'SELECT id, email, password_hash, name FROM users WHERE email = $1',
+      'SELECT id, email, password_hash, name, role FROM users WHERE email = $1',
       [email]
     );
     
@@ -85,7 +87,8 @@ export async function login(request, reply) {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name
+        name: user.name,
+        role: user.role
       },
       token
     });
@@ -119,7 +122,7 @@ export async function me(request, reply) {
     await request.jwtVerify();
     
     const result = await pool.query(
-      'SELECT id, email, name, phone, created_at FROM users WHERE id = $1',
+      'SELECT id, email, name, phone, role, created_at FROM users WHERE id = $1',
       [request.user.userId]
     );
     
