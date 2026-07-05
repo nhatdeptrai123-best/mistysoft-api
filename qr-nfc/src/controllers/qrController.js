@@ -2,8 +2,15 @@ import pool from '../config/database.js';
 import { generateQRCode, generateQRImage } from '../utils/helpers.js';
 
 async function getUserRole(request) {
-  const result = await pool.query('SELECT role FROM users WHERE id = $1', [request.user.userId]);
-  return result.rows[0]?.role || 'admin';
+  try {
+    const result = await pool.query('SELECT role FROM users WHERE id = $1', [request.user.userId]);
+    return result.rows[0]?.role || 'admin';
+  } catch (error) {
+    if (error.code === '42703') {
+      return 'admin';
+    }
+    throw error;
+  }
 }
 
 // List all QR codes for a venue

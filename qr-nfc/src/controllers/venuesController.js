@@ -1,11 +1,18 @@
 import pool from '../config/database.js';
 
 async function getCurrentUserRole(request) {
-  const result = await pool.query(
-    'SELECT role FROM users WHERE id = $1',
-    [request.user.userId]
-  );
-  return result.rows[0]?.role || 'admin';
+  try {
+    const result = await pool.query(
+      'SELECT role FROM users WHERE id = $1',
+      [request.user.userId]
+    );
+    return result.rows[0]?.role || 'admin';
+  } catch (error) {
+    if (error.code === '42703') {
+      return 'admin';
+    }
+    throw error;
+  }
 }
 
 // List venues for current user

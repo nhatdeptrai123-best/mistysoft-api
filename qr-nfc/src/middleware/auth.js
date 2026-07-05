@@ -28,10 +28,18 @@ export function requireRole(role) {
         [request.user.userId]
       );
       
-      if (result.rows.length === 0 || result.rows[0].role !== role) {
+      if (result.rows.length === 0) {
+        return reply.code(403).send({ error: 'Forbidden: insufficient permissions' });
+      }
+      
+      const userRole = result.rows[0].role;
+      if (userRole !== role) {
         return reply.code(403).send({ error: 'Forbidden: insufficient permissions' });
       }
     } catch (err) {
+      if (err.code === '42703') {
+        return reply.code(403).send({ error: 'Forbidden: insufficient permissions' });
+      }
       return reply.code(401).send({ error: 'Unauthorized' });
     }
   };
