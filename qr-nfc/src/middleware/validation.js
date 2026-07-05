@@ -58,7 +58,7 @@ export const createQRSchema = {
       venue_id: { type: 'string', format: 'uuid', maxLength: 36 },
       name: { type: 'string', minLength: 2, maxLength: 255 },
       description: { type: 'string', maxLength: 1000 },
-      redirect_url: { type: 'string', format: 'uri', maxLength: 2048 }
+      redirect_url: { type: 'string', maxLength: 2048 }
     },
     required: ['venue_id', 'name', 'redirect_url']
   }
@@ -70,7 +70,7 @@ export const updateQRSchema = {
     properties: {
       name: { type: 'string', minLength: 2, maxLength: 255 },
       description: { type: 'string', maxLength: 1000 },
-      redirect_url: { type: 'string', format: 'uri', maxLength: 2048 },
+      redirect_url: { type: 'string', maxLength: 2048 },
       is_active: { type: 'boolean' }
     }
   }
