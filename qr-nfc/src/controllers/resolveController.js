@@ -31,7 +31,8 @@ export async function resolveQRCode(request, reply) {
     
     return reply.send({
       redirect_url: qrCode.redirect_url,
-      venue_name: qrCode.venue_name
+      venue_name: qrCode.venue_name,
+      configured: !!qrCode.redirect_url
     });
     
   } catch (error) {

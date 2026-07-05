@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS qr_codes (
     code VARCHAR(50) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
     description TEXT,
-    redirect_url TEXT NOT NULL,
+    redirect_url TEXT,
     qr_image_url TEXT,
     is_active BOOLEAN DEFAULT true,
     scan_count INTEGER DEFAULT 0,

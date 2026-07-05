@@ -63,7 +63,7 @@ export async function createQRCode(request, reply) {
       `INSERT INTO qr_codes (venue_id, code, name, description, redirect_url, qr_image_url) 
        VALUES ($1, $2, $3, $4, $5, $6) 
        RETURNING *`,
-      [venue_id, code, name, description, redirect_url, qrImage]
+      [venue_id, code, name, description || null, redirect_url || '', qrImage]
     );
     
     return reply.code(201).send({

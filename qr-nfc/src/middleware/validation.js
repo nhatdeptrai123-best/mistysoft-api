@@ -60,7 +60,7 @@ export const createQRSchema = {
       description: { type: 'string', maxLength: 1000 },
       redirect_url: { type: 'string', maxLength: 2048 }
     },
-    required: ['venue_id', 'name', 'redirect_url']
+    required: ['venue_id', 'name']
   }
 };
 
