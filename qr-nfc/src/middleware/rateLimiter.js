@@ -3,6 +3,10 @@
 const rateLimitMap = new Map();
 
 function getClientIp(request) {
+  const forwarded = request.headers['x-forwarded-for'];
+  if (forwarded) {
+    return Array.isArray(forwarded) ? forwarded[0] : forwarded.split(',')[0].trim();
+  }
   return request.ip || request.connection.remoteAddress || 'unknown';
 }
 
@@ -16,7 +20,7 @@ export function rateLimit(options = {}) {
     
     if (!rateLimitMap.has(ip)) {
       rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs });
-      return;
+      return reply;
     }
     
     const record = rateLimitMap.get(ip);
@@ -24,7 +28,7 @@ export function rateLimit(options = {}) {
     if (now > record.resetTime) {
       record.count = 1;
       record.resetTime = now + windowMs;
-      return;
+      return reply;
     }
     
     record.count++;
@@ -35,7 +39,9 @@ export function rateLimit(options = {}) {
         message: `Rate limit exceeded. Please try again later.`
       });
     }
+    
+    return reply;
   };
 }
 
-export const authRateLimiter = rateLimit({ max: 10, window: 60000 });
+export const authRateLimiter = rateLimit({ max: 20, window: 60000 });

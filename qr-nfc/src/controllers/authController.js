@@ -69,6 +69,10 @@ export async function login(request, reply) {
     
     const user = result.rows[0];
     
+    if (!user.password_hash) {
+      return reply.code(500).send({ error: 'Account configuration error', message: 'Please contact support' });
+    }
+    
     // Verify password
     const isValid = await comparePassword(password, user.password_hash);
     
@@ -95,7 +99,10 @@ export async function login(request, reply) {
     
   } catch (error) {
     console.error('Login error:', error);
-    return reply.code(500).send({ error: 'Login failed' });
+    return reply.code(500).send({ 
+      error: 'Login failed', 
+      message: process.env.NODE_ENV === 'development' ? error.message : 'Please try again later' 
+    });
   }
 }
 
