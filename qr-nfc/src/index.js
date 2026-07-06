@@ -26,6 +26,7 @@ import * as analyticsController from './controllers/analyticsController.js';
 import * as ownersController from './controllers/ownersController.js';
 import * as reviewsController from './controllers/reviewsController.js';
 import { migrate } from './migrate.js';
+import pool from './config/database.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
