@@ -86,7 +86,7 @@ export const createReviewSchema = {
       rating: { type: 'integer', minimum: 1, maximum: 5 },
       comment: { type: 'string', maxLength: 2000 },
       customer_name: { type: 'string', maxLength: 255 },
-      customer_email: { type: 'string', format: 'email', maxLength: 255 }
+      customer_email: { type: 'string', maxLength: 255 }
     },
     required: ['code', 'rating']
   }

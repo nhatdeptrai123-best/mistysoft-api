@@ -4,8 +4,12 @@ export function errorHandler(error, request, reply) {
   console.error(error);
   
   if (error.validation) {
+    const details = Array.isArray(error.validation) 
+      ? error.validation.map(d => `${d.instancePath || d.dataPath || ''} ${d.message || ''}`).join(', ')
+      : error.validation;
     return reply.code(400).send({
       error: 'Validation Error',
+      message: details,
       details: error.validation
     });
   }
@@ -47,6 +51,7 @@ export function errorHandler(error, request, reply) {
   
   return reply.code(500).send({
     error: 'Internal Server Error',
-    message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+    message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong',
+    stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
   });
 }
