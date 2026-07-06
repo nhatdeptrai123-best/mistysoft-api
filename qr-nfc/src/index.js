@@ -147,6 +147,11 @@ const start = async () => {
     
     const port = parseInt(fastify.config.PORT);
     await fastify.listen({ port, host: '0.0.0.0' });
+    
+    pool.query('SELECT 1').catch(err => 
+      console.error('Warm-up query failed:', err)
+    );
+    
     console.log(`Server running on port ${port}`);
   } catch (err) {
     fastify.log.error(err);

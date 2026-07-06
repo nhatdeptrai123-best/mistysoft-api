@@ -5,9 +5,11 @@ const { Pool } = pg;
 // Database connection pool
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  max: 10,
+  idleTimeoutMillis: 10000,
+  connectionTimeoutMillis: 5000,
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000,
 });
 
 // Test connection
